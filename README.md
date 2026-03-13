@@ -45,6 +45,8 @@ Why this combination:
 - `flash-attn` on PyPI is source-only, so it is no longer the default backend here
 - `transformers==4.56.2` is new enough for `DINOv3ViTModel`
 
+The runtime should be treated as **Python 3.10 only** unless you are deliberately testing compatibility. The setup script and preflight now fail fast on unsupported Python versions so you do not burn GPU time on a stack that can load but produce invalid quantized results later.
+
 Before starting a paid GPU session, you can also run:
 
 ```bash
@@ -52,6 +54,7 @@ python scripts/preflight_runtime.py
 ```
 
 That checks the exact extension imports and the `transformers` DINOv3 class import before you try loading the model.
+It also checks the Python, PyTorch, and TorchAO versions that the quantized loader expects.
 
 ## Hugging Face Auth
 

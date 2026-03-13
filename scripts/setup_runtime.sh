@@ -4,6 +4,21 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+python - <<'PY'
+import os
+import sys
+
+required = (3, 10)
+allow_unsupported = os.getenv("ALLOW_UNSUPPORTED_PYTHON") == "1"
+current = sys.version_info[:2]
+if current != required and not allow_unsupported:
+    raise SystemExit(
+        "Unsupported Python runtime: "
+        f"{sys.version_info.major}.{sys.version_info.minor}. "
+        "Use Python 3.10 for this TRELLIS.2 quant runtime, or set ALLOW_UNSUPPORTED_PYTHON=1 to bypass."
+    )
+PY
+
 if ! python -c "import torch" >/dev/null 2>&1; then
   python -m pip install torch==2.6.0 torchvision==0.21.0 --index-url https://download.pytorch.org/whl/cu124
 fi

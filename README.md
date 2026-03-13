@@ -28,6 +28,23 @@ uvicorn backend.main:app --reload --app-dir .
 cd frontend && npm run dev
 ```
 
+## Recommended Environment
+
+For Lightning Studios, the safest fast-start baseline for this app is:
+
+- Python `3.10`
+- PyTorch `2.6.0`
+- Torchvision `0.21.0`
+- CUDA `12.4`
+
+Why this combination:
+
+- it matches the upstream TRELLIS setup direction
+- `xformers` has Linux wheels for Python 3.10 on this stack
+- `spconv-cu124` has Linux wheels for Python 3.10 on this stack
+- `flash-attn` on PyPI is source-only, so it is no longer the default backend here
+- `transformers==4.56.2` is new enough for `DINOv3ViTModel`
+
 Before starting a paid GPU session, you can also run:
 
 ```bash
@@ -60,6 +77,21 @@ The runtime loads `.env` automatically before any TRELLIS, DINO, or BiRefNet Hug
 - `HF_HUB_ENABLE_HF_TRANSFER=1` is enabled automatically for faster downloads when `hf_transfer` is installed
 - the quantized TRELLIS repo is snapshot-downloaded into the Hugging Face cache before model initialization, so first-load fetches happen in parallel instead of file-by-file
 - pipeline configs, quantized `.int8.pt` weights, DINO, and BiRefNet all share the same auth/bootstrap path
+
+## Build-Time Strategy
+
+This repo now prefers prebuilt wheels where they actually exist:
+
+- attention backend: `xformers`
+- sparse conv backend: `spconv-cu124`
+
+Packages still likely to build from source on a fresh machine:
+
+- `nvdiffrast`
+- `CuMesh`
+- `o-voxel`
+
+`FlexGEMM` and `flash-attn` are no longer part of the default install path.
 
 ## Default Quantized Model
 

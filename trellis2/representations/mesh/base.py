@@ -1,8 +1,18 @@
 from typing import *
 import torch
 from ..voxel import Voxel
-import cumesh
-from flex_gemm.ops.grid_sample import grid_sample_3d
+
+
+def _import_cumesh():
+    import cumesh
+
+    return cumesh
+
+
+def _import_grid_sample_3d():
+    from flex_gemm.ops.grid_sample import grid_sample_3d
+
+    return grid_sample_3d
 
 
 class Mesh:
@@ -35,7 +45,7 @@ class Mesh:
     def fill_holes(self, max_hole_perimeter=3e-2):
         vertices = self.vertices.cuda()
         faces = self.faces.cuda()
-        
+        cumesh = _import_cumesh()
         mesh = cumesh.CuMesh()
         mesh.init(vertices, faces)
         mesh.get_edges()
@@ -59,7 +69,7 @@ class Mesh:
     def remove_faces(self, face_mask: torch.Tensor):
         vertices = self.vertices.cuda()
         faces = self.faces.cuda()
-        
+        cumesh = _import_cumesh()
         mesh = cumesh.CuMesh()
         mesh.init(vertices, faces)
         mesh.remove_faces(face_mask)
@@ -71,7 +81,7 @@ class Mesh:
     def simplify(self, target=1000000, verbose: bool=False, options: dict={}):
         vertices = self.vertices.cuda()
         faces = self.faces.cuda()
-        
+        cumesh = _import_cumesh()
         mesh = cumesh.CuMesh()
         mesh.init(vertices, faces)
         mesh.simplify(target, verbose=verbose, options=options)
@@ -220,6 +230,7 @@ class MeshWithVoxel(Mesh, Voxel):
         )
         
     def query_attrs(self, xyz):
+        grid_sample_3d = _import_grid_sample_3d()
         grid = ((xyz - self.origin) / self.voxel_size).reshape(1, -1, 3)
         vertex_attrs = grid_sample_3d(
             self.attrs,

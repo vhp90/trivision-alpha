@@ -8,9 +8,10 @@ CHECKS = {
     "torch": "PyTorch core",
     "torchvision": "Torchvision",
     "transformers": "Transformers",
+    "xformers": "xFormers attention backend",
+    "spconv.pytorch": "spconv sparse convolution backend",
     "nvdiffrast.torch": "nvdiffrast CUDA rasterizer",
     "cumesh": "CuMesh",
-    "flex_gemm": "FlexGEMM",
     "o_voxel": "O-Voxel",
 }
 

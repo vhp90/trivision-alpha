@@ -11,8 +11,12 @@ fi
 python -m pip install -r backend/requirements.txt
 python -m pip install git+https://github.com/EasternJournalist/utils3d.git@9a4eb15e4021b67b12c460c7057d642626897ec8
 
-if ! python -c "import flash_attn" >/dev/null 2>&1; then
-  python -m pip install flash-attn==2.7.3
+if ! python -c "import xformers" >/dev/null 2>&1; then
+  python -m pip install xformers==0.0.29.post2
+fi
+
+if ! python -c "import spconv.pytorch" >/dev/null 2>&1; then
+  python -m pip install spconv-cu124==2.3.8
 fi
 
 mkdir -p /tmp/trivision-alpha
@@ -29,13 +33,6 @@ if ! python -c "import cumesh" >/dev/null 2>&1; then
     git clone https://github.com/JeffreyXiang/CuMesh.git /tmp/trivision-alpha/CuMesh --recursive
   fi
   python -m pip install /tmp/trivision-alpha/CuMesh --no-build-isolation
-fi
-
-if ! python -c "import flex_gemm" >/dev/null 2>&1; then
-  if [ ! -d /tmp/trivision-alpha/FlexGEMM ]; then
-    git clone https://github.com/JeffreyXiang/FlexGEMM.git /tmp/trivision-alpha/FlexGEMM --recursive
-  fi
-  python -m pip install /tmp/trivision-alpha/FlexGEMM --no-build-isolation
 fi
 
 if ! python -c "import o_voxel" >/dev/null 2>&1; then

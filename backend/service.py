@@ -27,6 +27,11 @@ OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
 
 
 def _configure_cuda() -> None:
+    os.environ.setdefault("ATTN_BACKEND", "xformers")
+    os.environ.setdefault("SPARSE_ATTN_BACKEND", "xformers")
+    os.environ.setdefault("SPARSE_CONV_BACKEND", "spconv")
+    os.environ.setdefault("SPCONV_ALGO", "implicit_gemm")
+
     if not torch.cuda.is_available():
         return
     torch.backends.cuda.matmul.allow_tf32 = True

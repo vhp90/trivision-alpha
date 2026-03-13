@@ -28,6 +28,14 @@ uvicorn backend.main:app --reload --app-dir .
 cd frontend && npm run dev
 ```
 
+Before starting a paid GPU session, you can also run:
+
+```bash
+python scripts/preflight_runtime.py
+```
+
+That checks the exact extension imports and the `transformers` DINOv3 class import before you try loading the model.
+
 ## Hugging Face Auth
 
 This app expects a `.env` file at the repo root when you are using gated or rate-limited model repos.
@@ -50,6 +58,7 @@ The runtime loads `.env` automatically before any TRELLIS, DINO, or BiRefNet Hug
 
 - Hugging Face downloads use the token loaded from `.env`
 - `HF_HUB_ENABLE_HF_TRANSFER=1` is enabled automatically for faster downloads when `hf_transfer` is installed
+- the quantized TRELLIS repo is snapshot-downloaded into the Hugging Face cache before model initialization, so first-load fetches happen in parallel instead of file-by-file
 - pipeline configs, quantized `.int8.pt` weights, DINO, and BiRefNet all share the same auth/bootstrap path
 
 ## Default Quantized Model

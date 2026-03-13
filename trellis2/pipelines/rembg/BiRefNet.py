@@ -1,5 +1,4 @@
 from typing import *
-from transformers import AutoModelForImageSegmentation
 import torch
 from torchvision import transforms
 from PIL import Image
@@ -8,6 +7,8 @@ from ...hf import get_hf_token
 
 class BiRefNet:
     def __init__(self, model_name: str = "ZhengPeng7/BiRefNet"):
+        from transformers import AutoModelForImageSegmentation
+
         token = get_hf_token()
         kwargs = {"token": token} if token else {}
         self.model = AutoModelForImageSegmentation.from_pretrained(

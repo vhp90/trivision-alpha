@@ -2,7 +2,6 @@ from typing import *
 import torch
 import torch.nn.functional as F
 from torchvision import transforms
-from transformers import DINOv3ViTModel
 import numpy as np
 from PIL import Image
 from ..hf import get_hf_token
@@ -62,6 +61,8 @@ class DinoV3FeatureExtractor:
     Feature extractor for DINOv3 models.
     """
     def __init__(self, model_name: str, image_size=512):
+        from transformers import DINOv3ViTModel
+
         self.model_name = model_name
         token = get_hf_token()
         kwargs = {"token": token} if token else {}

@@ -21,11 +21,6 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-import o_voxel
-from trellis2.pipelines import Trellis2ImageTo3DPipeline
-from trellis2.utils import render_utils
-
-
 DEFAULT_MODEL_ID = os.getenv("TRIVISION_MODEL_ID", "ahp93/TRELLIS.2-4B-INT8")
 OUTPUT_ROOT = ROOT / "backend" / "generated"
 OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
@@ -151,7 +146,7 @@ class TrivisionEngine:
         _configure_cuda()
         self._lock = threading.Lock()
         self._executor = ThreadPoolExecutor(max_workers=1)
-        self._pipeline: Trellis2ImageTo3DPipeline | None = None
+        self._pipeline: Any | None = None
         self._model_id: str | None = None
         self._keep_models_on_gpu = True
         self._device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -192,6 +187,29 @@ class TrivisionEngine:
             "defaults": default_settings(),
         }
 
+    def _get_pipeline_class(self):
+        from trellis2.pipelines import Trellis2ImageTo3DPipeline
+
+        return Trellis2ImageTo3DPipeline
+
+    def _resolve_model_source(self, model_id: str) -> str:
+        if os.path.isdir(model_id):
+            return model_id
+
+        from trellis2.hf import snapshot_download_with_auth
+
+        return snapshot_download_with_auth(model_id)
+
+    def _get_render_utils(self):
+        from trellis2.utils import render_utils
+
+        return render_utils
+
+    def _get_o_voxel(self):
+        import o_voxel
+
+        return o_voxel
+
     def unload(self) -> None:
         with self._lock:
             self._pipeline = None
@@ -212,7 +230,9 @@ class TrivisionEngine:
 
         self.unload()
 
-        pipeline = Trellis2ImageTo3DPipeline.from_pretrained(model_id)
+        pipeline_cls = self._get_pipeline_class()
+        source = self._resolve_model_source(model_id)
+        pipeline = pipeline_cls.from_pretrained(source)
         pipeline.low_vram = not keep_models_on_gpu
         pipeline._device = torch.device(target_device)
 
@@ -304,6 +324,7 @@ class TrivisionEngine:
             samples: list[dict[str, str]] = []
             for index, mesh in enumerate(outputs, start=1):
                 mesh.simplify(16777216)
+                render_utils = self._get_render_utils()
                 previews = render_utils.render_snapshot(
                     mesh,
                     resolution=int(settings["preview_resolution"]),
@@ -317,6 +338,7 @@ class TrivisionEngine:
                 preview_path = job_root / preview_name
                 preview_sheet.save(preview_path)
 
+                o_voxel = self._get_o_voxel()
                 glb = o_voxel.postprocess.to_glb(
                     vertices=mesh.vertices,
                     faces=mesh.faces,

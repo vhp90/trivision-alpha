@@ -10,29 +10,43 @@ fi
 
 python -m pip install -r backend/requirements.txt
 python -m pip install git+https://github.com/EasternJournalist/utils3d.git@9a4eb15e4021b67b12c460c7057d642626897ec8
-python -m pip install flash-attn==2.7.3
+
+if ! python -c "import flash_attn" >/dev/null 2>&1; then
+  python -m pip install flash-attn==2.7.3
+fi
 
 mkdir -p /tmp/trivision-alpha
 
-if [ ! -d /tmp/trivision-alpha/nvdiffrast ]; then
-  git clone -b v0.4.0 https://github.com/NVlabs/nvdiffrast.git /tmp/trivision-alpha/nvdiffrast
+if ! python -c "import nvdiffrast.torch" >/dev/null 2>&1; then
+  if [ ! -d /tmp/trivision-alpha/nvdiffrast ]; then
+    git clone -b v0.4.0 https://github.com/NVlabs/nvdiffrast.git /tmp/trivision-alpha/nvdiffrast
+  fi
+  python -m pip install /tmp/trivision-alpha/nvdiffrast --no-build-isolation
 fi
-python -m pip install /tmp/trivision-alpha/nvdiffrast --no-build-isolation
 
-if [ ! -d /tmp/trivision-alpha/CuMesh ]; then
-  git clone https://github.com/JeffreyXiang/CuMesh.git /tmp/trivision-alpha/CuMesh --recursive
+if ! python -c "import cumesh" >/dev/null 2>&1; then
+  if [ ! -d /tmp/trivision-alpha/CuMesh ]; then
+    git clone https://github.com/JeffreyXiang/CuMesh.git /tmp/trivision-alpha/CuMesh --recursive
+  fi
+  python -m pip install /tmp/trivision-alpha/CuMesh --no-build-isolation
 fi
-python -m pip install /tmp/trivision-alpha/CuMesh --no-build-isolation
 
-if [ ! -d /tmp/trivision-alpha/FlexGEMM ]; then
-  git clone https://github.com/JeffreyXiang/FlexGEMM.git /tmp/trivision-alpha/FlexGEMM --recursive
+if ! python -c "import flex_gemm" >/dev/null 2>&1; then
+  if [ ! -d /tmp/trivision-alpha/FlexGEMM ]; then
+    git clone https://github.com/JeffreyXiang/FlexGEMM.git /tmp/trivision-alpha/FlexGEMM --recursive
+  fi
+  python -m pip install /tmp/trivision-alpha/FlexGEMM --no-build-isolation
 fi
-python -m pip install /tmp/trivision-alpha/FlexGEMM --no-build-isolation
 
-python -m pip install ./o-voxel --no-build-isolation
+if ! python -c "import o_voxel" >/dev/null 2>&1; then
+  python -m pip install ./o-voxel --no-build-isolation
+fi
 
 cd frontend
 npm install
+
+cd "$ROOT"
+python scripts/preflight_runtime.py
 
 echo
 echo "Runtime dependencies installed."

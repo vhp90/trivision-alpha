@@ -71,3 +71,16 @@ def hf_hub_download_with_auth(repo_id: str, filename: str) -> str:
         kwargs["token"] = token
     return hf_hub_download(repo_id, filename, **kwargs)
 
+
+def snapshot_download_with_auth(repo_id: str) -> str:
+    initialize_hf_environment()
+    from huggingface_hub import snapshot_download
+
+    kwargs: dict[str, Any] = {
+        "resume_download": True,
+        "max_workers": 16,
+    }
+    token = get_hf_token()
+    if token:
+        kwargs["token"] = token
+    return snapshot_download(repo_id, **kwargs)

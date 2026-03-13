@@ -1,5 +1,17 @@
 import type { StudioJob, StudioStatus } from "./types";
 
+async function extractError(response: Response): Promise<string> {
+  try {
+    const payload = await response.json();
+    if (typeof payload?.detail === "string") {
+      return payload.detail;
+    }
+  } catch {
+    // Fall back to plain text below.
+  }
+  return response.text();
+}
+
 export async function fetchStatus(): Promise<StudioStatus> {
   const response = await fetch("/api/status");
   if (!response.ok) {
@@ -21,7 +33,7 @@ export async function loadModel(payload: {
     body: JSON.stringify(payload)
   });
   if (!response.ok) {
-    throw new Error(await response.text());
+    throw new Error(await extractError(response));
   }
   return response.json();
 }
@@ -36,7 +48,7 @@ export async function createJob(image: File, settings: Record<string, unknown>):
     body: form
   });
   if (!response.ok) {
-    throw new Error(await response.text());
+    throw new Error(await extractError(response));
   }
   return response.json();
 }

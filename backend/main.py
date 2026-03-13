@@ -31,11 +31,14 @@ def api_load(payload: dict) -> dict:
     model_id = payload.get("model_id")
     if not model_id:
         raise HTTPException(status_code=400, detail="model_id is required")
-    return ENGINE.load_model(
-        model_id,
-        keep_models_on_gpu=bool(payload.get("keep_models_on_gpu", True)),
-        device=payload.get("device"),
-    )
+    try:
+        return ENGINE.load_model(
+            model_id,
+            keep_models_on_gpu=bool(payload.get("keep_models_on_gpu", True)),
+            device=payload.get("device"),
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 @app.post("/api/generate")
@@ -48,8 +51,11 @@ async def api_generate(
     except json.JSONDecodeError as exc:
         raise HTTPException(status_code=400, detail=f"Invalid settings JSON: {exc}") from exc
 
-    record = ENGINE.submit(await image.read(), payload)
-    return JSONResponse(record.as_dict())
+    try:
+        record = ENGINE.submit(await image.read(), payload)
+        return JSONResponse(record.as_dict())
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 @app.get("/api/jobs/{job_id}")
